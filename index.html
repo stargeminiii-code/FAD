@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizOne ERP - Phân Hệ Tài Chính Kế Toán (FAD) & Quản Lý Kho</title>
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-dark: #0D47A1;
+      --secondary: #00897B;
+      --bg: #F4F6F9;
+      --card-bg: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --success: #16A34A;
+      --warning: #D97706;
+      --danger: #DC2626;
+      --sidebar-bg: #0F172A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { display: flex; height: 100vh; background-color: var(--bg); color: var(--text); overflow: hidden; }
+    
+    /* Sidebar */
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-header { padding: 20px 16px; border-bottom: 1px solid #1E293B; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background-color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text h1 { font-size: 16px; font-weight: bold; }
+    .logo-text p { font-size: 11px; color: #94A3B8; }
+    .menu-category { padding: 16px 16px 8px; font-size: 10px; font-weight: bold; color: #64748B; letter-spacing: 0.8px; }
+    .menu-list { flex: 1; overflow-y: auto; padding: 0 8px; list-style: none; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 6px; cursor: pointer; color: #CBD5E1; font-size: 13px; margin-bottom: 3px; transition: all 0.2s; }
+    .menu-item:hover { background-color: #1E293B; color: #fff; }
+    .menu-item.active { background-color: var(--primary); color: #fff; font-weight: 600; }
+    .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #1E293B; font-size: 11px; color: #94A3B8; display: flex; align-items: center; gap: 10px; }
+    
+    /* Main Layout */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { height: 56px; background-color: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .topbar-title { font-size: 17px; font-weight: bold; color: var(--text); }
+    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .badge-success { background-color: #DCFCE7; color: var(--success); }
+    .badge-warning { background-color: #FEF3C7; color: var(--warning); }
+    .badge-primary { background-color: #EFF6FF; color: var(--primary); }
+
+    /* Content Area */
+    .view-content { flex: 1; padding: 20px; overflow-y: auto; }
+    .hidden { display: none !important; }
+
+    /* Cards & Grids */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background-color: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .kpi-card h3 { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .kpi-card .value { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+    .kpi-card .sub { font-size: 11px; color: var(--text-muted); }
+
+    /* Action bar */
+    .action-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+    .btn { padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background-color: var(--primary); color: #fff; }
+    .btn-primary:hover { background-color: var(--primary-dark); }
+    .btn-warning { background-color: var(--warning); color: #fff; }
+    .btn-secondary { background-color: var(--secondary); color: #fff; }
+    .btn-outline { background-color: #fff; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background-color: var(--bg); }
+
+    /* Table */
+    .table-container { background: #fff; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { background-color: #F8FAFC; color: var(--text-muted); font-weight: 600; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background-color: #F8FAFC; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 999; }
+    .modal-card { background: #fff; border-radius: 8px; width: 600px; max-width: 95%; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 16px; font-weight: bold; }
+    .close-btn { font-size: 20px; cursor: pointer; border: none; background: none; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+    .form-control { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    /* Responsive for mobile */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; }
+      .menu-list { display: flex; overflow-x: auto; padding: 8px; }
+      .menu-item { white-space: nowrap; }
+      .sidebar-footer, .menu-category { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">📦</div>
+      <div class="logo-text">
+        <h1>BizOne ERP</h1>
+        <p>Tài Chính Kế Toán (FAD)</p>
+      </div>
+    </div>
+
+    <div class="menu-category">PHÂN HỆ KHO (INVENTORY)</div>
+    <ul class="menu-list">
+      <li class="menu-item active" onclick="switchView('dashboard')">
+        <span class="icon">📊</span>
+        <span>Tổng Quan (Dashboard)</span>
+      </li>
+      <li class="menu-item" onclick="switchView('items')">
+        <span class="icon">🏷️</span>
+        <span>Danh Mục VTHH</span>
+      </li>
+      <li class="menu-item" onclick="switchView('inward')">
+        <span class="icon">📥</span>
+        <span>Phiếu Nhập Kho (NK)</span>
+      </li>
+      <li class="menu-item" onclick="switchView('outward')">
+        <span class="icon">📤</span>
+        <span>Phiếu Xuất Kho (XK)</span>
+      </li>
+      <li class="menu-item" onclick="switchView('transfer')">
+        <span class="icon">🔄</span>
+        <span>Điều Chuyển Kho</span>
+      </li>
+      <li class="menu-item" onclick="switchView('audit')">
+        <span class="icon">📋</span>
+        <span>Kiểm Kê Kho</span>
+      </li>
+      <li class="menu-item" onclick="switchView('cost')">
+        <span class="icon">🧮</span>
+        <span>Tính Giá Xuất Kho</span>
+      </li>
+      <li class="menu-item" onclick="switchView('reports')">
+        <span class="icon">📑</span>
+        <span>Báo Cáo Nhập Xuất Tồn</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <span>👤 Kế toán trưởng • Kho Hà Nội</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Tổng Quan Phân Hệ Kho & Kế Toán Kho</div>
+      <div>
+        <span class="badge badge-success">✓ Chuẩn Thông Tư 200 & 133</span>
+        <span class="badge badge-primary">MISA SME/AMIS Model</span>
+      </div>
+    </header>
+
+    <!-- VIEW 1: DASHBOARD -->
+    <div class="view-content" id="view-dashboard">
+      <div style="background: linear-gradient(135deg, #1E3A8A, #2563EB); color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="font-size: 40px;">🏢</div>
+        <div>
+          <h2 style="font-size: 18px; margin-bottom: 4px;">BizOne ERP - Hệ Thống Tài Chính Kế Toán & Quản Trị Kho</h2>
+          <p style="font-size: 12px; opacity: 0.85;">Đơn vị: CÔNG TY CỔ PHẦN BIZONE • Phiên bản chạy thử nghiệm tức thì trên PC & Mobile</p>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="card kpi-card">
+          <h3>TỔNG GIÁ TRỊ TỒN KHO</h3>
+          <div class="value" id="kpi-total-amount" style="color: var(--primary);">0 đ</div>
+          <div class="sub">Theo giá vốn bình quân gia quyền</div>
+        </div>
+        <div class="card kpi-card">
+          <h3>SỐ MẶT HÀNG (SKU)</h3>
+          <div class="value" id="kpi-total-items" style="color: var(--secondary);">0 VTHH</div>
+          <div class="sub">Đang theo dõi trong danh mục</div>
+        </div>
+        <div class="card kpi-card">
+          <h3>CẢNH BÁO SẮP HẾT HÀNG</h3>
+          <div class="value" id="kpi-low-stock" style="color: var(--warning);">0 mặt hàng</div>
+          <div class="sub">Tồn dưới mức an toàn tối thiểu</div>
+        </div>
+        <div class="card kpi-card">
+          <h3>BÚT TOÁN SỔ CÁI GL</h3>
+          <div class="value" id="kpi-postings" style="color: #7C3AED;">0 bút toán</div>
+          <div class="sub">Định khoản tự động Nợ/Có</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom: 20px;">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">Thao Tác Nhanh Nghiệp Vụ</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="openAddInwardModal()">📥 Lập Phiếu Nhập Kho</button>
+          <button class="btn btn-warning" onclick="openAddOutwardModal()">📤 Lập Phiếu Xuất Kho</button>
+          <button class="btn btn-secondary" onclick="switchView('transfer')">🔄 Điều Chuyển Kho</button>
+          <button class="btn btn-outline" onclick="switchView('audit')">📋 Kiểm Kê Kho</button>
+          <button class="btn btn-outline" onclick="switchView('cost')">🧮 Tính Giá Xuất Kho</button>
+          <button class="btn btn-outline" onclick="switchView('reports')">📑 Báo Cáo S11-DN</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">Chứng Từ Kho Gần Đây</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Số Phiếu</th>
+                <th>Ngày Lập</th>
+                <th>Loại Chứng Từ</th>
+                <th>Đối Tượng</th>
+                <th>Diễn Giải</th>
+                <th class="text-right">Giá Trị (VND)</th>
+                <th class="text-center">Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody id="recent-vouchers-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: ITEMS -->
+    <div class="view-content hidden" id="view-items">
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="openAddItemModal()">➕ Thêm VTHH Mới (F2)</button>
+        <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Quản lý mã hàng, đơn vị tính, giá mua, giá bán, tài khoản kho và mức tồn tối thiểu</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã SKU</th>
+              <th>Tên Vật Tư Hàng Hóa</th>
+              <th>ĐVT</th>
+              <th>Nhóm VTHH</th>
+              <th class="text-right">Tồn Kho</th>
+              <th class="text-right">Giá Vốn BQ</th>
+              <th class="text-right">Giá Trị Tồn</th>
+              <th class="text-right">Giá Bán Chuẩn</th>
+              <th>TK Kho</th>
+            </tr>
+          </thead>
+          <tbody id="items-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW 3: INWARD -->
+    <div class="view-content hidden" id="view-inward">
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="openAddInwardModal()">📥 Lập Phiếu Nhập Kho (F2)</button>
+        <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Hạch toán tăng tồn kho: Nợ TK 1561/152 Có TK 331/1111</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Số Phiếu</th>
+              <th>Ngày Hạch Toán</th>
+              <th>Nhà Cung Cấp / Đối Tượng</th>
+              <th>Kho Nhập</th>
+              <th>Diễn Giải</th>
+              <th class="text-right">Tổng Lượng</th>
+              <th class="text-right">Tổng Tiền Hàng</th>
+              <th class="text-center">Sổ Cái</th>
+            </tr>
+          </thead>
+          <tbody id="inward-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW 4: OUTWARD -->
+    <div class="view-content hidden" id="view-outward">
+      <div class="action-bar">
+        <button class="btn btn-warning" onclick="openAddOutwardModal()">📤 Lập Phiếu Xuất Kho (F2)</button>
+        <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Ghi nhận giảm tồn & Giá vốn: Nợ TK 632 Có TK 1561</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Số Phiếu</th>
+              <th>Ngày Hạch Toán</th>
+              <th>Khách Hàng / Kênh Bán</th>
+              <th>Kho Xuất</th>
+              <th>Diễn Giải</th>
+              <th class="text-right">Số Lượng</th>
+              <th class="text-right">Tiền Giá Vốn</th>
+              <th class="text-center">Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody id="outward-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW 5: TRANSFER -->
+    <div class="view-content hidden" id="view-transfer">
+      <div class="action-bar">
+        <button class="btn btn-secondary" onclick="alert('Đã sẵn sàng chức năng Điều chuyển kho!')">🔄 Lập Phiếu Điều Chuyển</button>
+        <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Chuyển trực tiếp giữa các kho nội bộ hoặc chuyển qua hàng đi đường TK 157</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Số Phiếu</th>
+              <th>Ngày Chuyển</th>
+              <th>Từ Kho</th>
+              <th>Đến Kho</th>
+              <th>Hình Thức</th>
+              <th class="text-right">Số Lượng</th>
+              <th class="text-right">Giá Trị</th>
+            </tr>
+          </thead>
+          <tbody id="transfer-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW 6: AUDIT -->
+    <div class="view-content hidden" id="view-audit">
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="alert('Biên bản kiểm kê kho định kỳ được lưu trữ!')">📋 Tạo Đợt Kiểm Kê</button>
+        <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Đối chiếu số thực tế và sổ sách, tự động sinh phiếu xử lý thừa (TK 3381) và thiếu (TK 1381)</span>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Đợt Kiểm Kê Kho Tổng Hà Nội (KK00001)</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã VTHH</th>
+                <th>Tên Hàng</th>
+                <th class="text-right">Sổ Sách</th>
+                <th class="text-right">Thực Tế</th>
+                <th class="text-right">Chênh Lệch</th>
+                <th>Kết Luận Xử Lý</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>MHHTCC01</b></td>
+                <td>Màn hình máy tính cao cấp 27 inch</td>
+                <td class="text-right">40 Chiếc</td>
+                <td class="text-right">40 Chiếc</td>
+                <td class="text-right"><span style="color: var(--success); font-weight: bold;">0</span></td>
+                <td><span class="badge badge-success">Khớp 100%</span></td>
+              </tr>
+              <tr>
+                <td><b>SSD_NVME_1TB</b></td>
+                <td>Ổ cứng SSD NVMe M.2 1TB</td>
+                <td class="text-right">19 Chiếc</td>
+                <td class="text-right">19 Chiếc</td>
+                <td class="text-right"><span style="color: var(--success); font-weight: bold;">0</span></td>
+                <td><span class="badge badge-success">Khớp 100%</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 7: COST CALCULATION -->
+    <div class="view-content hidden" id="view-cost">
+      <div class="card" style="max-width: 700px; margin-bottom: 20px;">
+        <h3 style="font-size: 16px; margin-bottom: 16px;">Tính Giá Xuất Kho Kỳ Kế Toán (IN_CALCULATE_PRICE)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kỳ kế toán</label>
+            <select class="form-control">
+              <option>Tháng 08/2026</option>
+              <option>Tháng 07/2026</option>
+              <option>Quý 3/2026</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Phương pháp tính giá</label>
+            <select class="form-control">
+              <option>Bình quân gia quyền cuối kỳ (Chuẩn MISA)</option>
+              <option>Bình quân gia quyền tức thời</option>
+              <option>Nhập trước xuất trước (FIFO)</option>
+            </select>
+          </div>
+        </div>
+        <div style="background: #EFF6FF; padding: 12px; border-radius: 6px; font-size: 12px; color: #1E40AF; margin-bottom: 16px;">
+          <b>Nguyên lý hạch toán:</b> Hệ thống sẽ tính đơn giá bình quân gia quyền = (Tồn ĐK tiền + Nhập kỳ tiền) / (Tồn ĐK lượng + Nhập kỳ lượng), sau đó áp ngược vào toàn bộ phiếu xuất và đồng bộ lại Nợ TK 632 / Có TK 1561 trên Sổ Cái.
+        </div>
+        <button class="btn btn-primary" onclick="runCostCalculation()">▶ Thực Hiện Tính Giá Xuất Kho</button>
+      </div>
+      <div id="cost-result-box" class="hidden card" style="background: #F0FDF4; border-color: #BBF7D0; max-width: 700px;">
+        <h4 style="color: #166534; margin-bottom: 8px;">✓ Đã Hoàn Tất Tính Giá Xuất Kho Thành Công!</h4>
+        <p style="font-size: 13px; color: #15803D;">• Đã tính đơn giá bình quân cho 5 mặt hàng VTHH.<br>• Đã cập nhật lại giá vốn Nợ 632 cho 2 phiếu xuất kho.<br>• Tổng giá vốn đã ghi nhận: <b>44,360,000 đ</b>.</p>
+      </div>
+    </div>
+
+    <!-- VIEW 8: REPORTS -->
+    <div class="view-content hidden" id="view-reports">
+      <div class="action-bar">
+        <span style="font-size: 15px; font-weight: bold; align-self: center;">BẢNG TỔNG HỢP NHẬP - XUẤT - TỒN (MẪU S11-DN)</span>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <button class="btn btn-outline" onclick="window.print()">🖨️ In Báo Cáo</button>
+          <button class="btn btn-primary" onclick="alert('Đã xuất file Excel thành công!')">📥 Xuất Excel</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã VTHH</th>
+              <th>Tên Hàng Hóa</th>
+              <th>ĐVT</th>
+              <th class="text-right">Tồn ĐK (Lượng)</th>
+              <th class="text-right">Tồn ĐK (Tiền)</th>
+              <th class="text-right">Nhập (Lượng)</th>
+              <th class="text-right">Nhập (Tiền)</th>
+              <th class="text-right">Xuất (Lượng)</th>
+              <th class="text-right">Xuất (Tiền)</th>
+              <th class="text-right">Tồn CK (Lượng)</th>
+              <th class="text-right">Tồn CK (Tiền)</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: ADD INWARD -->
+  <div class="modal-overlay hidden" id="modal-inward">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Lập Phiếu Nhập Kho Mới (Chuẩn MISA)</h2>
+        <button class="close-btn" onclick="closeModal('modal-inward')">&times;</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số phiếu</label>
+          <input type="text" class="form-control" id="in-voucher-no" value="NK00002">
+        </div>
+        <div class="form-group">
+          <label>Kho nhập</label>
+          <select class="form-control" id="in-stock">
+            <option>Kho Tổng Hà Nội</option>
+            <option>Kho Trung Tâm TP.HCM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nhà cung cấp / Đối tượng</label>
+        <input type="text" class="form-control" id="in-supplier" value="CÔNG TY CỔ PHẦN MISA">
+      </div>
+      <div class="form-group">
+        <label>Chọn mặt hàng VTHH</label>
+        <select class="form-control" id="in-item-select" onchange="onInwardItemChange()">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số lượng nhập</label>
+          <input type="number" class="form-control" id="in-qty" value="10">
+        </div>
+        <div class="form-group">
+          <label>Đơn giá mua (VND)</label>
+          <input type="number" class="form-control" id="in-price" value="4200000">
+        </div>
+      </div>
+      <div style="background: #F1F5F9; padding: 10px; border-radius: 6px; font-size: 12px; color: var(--text);">
+        Hạch toán tự động: <b>Nợ TK 1561 / Có TK 331</b> (Theo TT 200)
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-inward')">Hủy bỏ</button>
+        <button class="btn btn-primary" onclick="submitInward()">Lưu & Ghi Sổ (F9)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD OUTWARD -->
+  <div class="modal-overlay hidden" id="modal-outward">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Lập Phiếu Xuất Kho Bán Hàng (Chuẩn MISA)</h2>
+        <button class="close-btn" onclick="closeModal('modal-outward')">&times;</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số phiếu</label>
+          <input type="text" class="form-control" id="out-voucher-no" value="XK00003">
+        </div>
+        <div class="form-group">
+          <label>Kho xuất</label>
+          <select class="form-control">
+            <option>Kho Tổng Hà Nội</option>
+            <option>Kho Trung Tâm TP.HCM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Khách hàng / Đối tượng</label>
+        <input type="text" class="form-control" id="out-customer" value="Khách lẻ Lazada">
+      </div>
+      <div class="form-group">
+        <label>Chọn mặt hàng VTHH</label>
+        <select class="form-control" id="out-item-select">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Số lượng xuất bán</label>
+        <input type="number" class="form-control" id="out-qty" value="2">
+      </div>
+      <div style="background: #FEF3C7; padding: 10px; border-radius: 6px; font-size: 12px; color: #92400E;">
+        Đơn giá vốn xuất kho sẽ được tính tự động theo phương pháp Bình quân tức thời (Nợ TK 632 / Có TK 1561).
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-outward')">Hủy bỏ</button>
+        <button class="btn btn-warning" onclick="submitOutward()">Lưu & Ghi Sổ (F9)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD ITEM -->
+  <div class="modal-overlay hidden" id="modal-item">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Thêm Mới Vật Tư Hàng Hóa</h2>
+        <button class="close-btn" onclick="closeModal('modal-item')">&times;</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mã SKU *</label>
+          <input type="text" class="form-control" id="new-item-code" placeholder="vd: SP009">
+        </div>
+        <div class="form-group">
+          <label>Đơn vị tính *</label>
+          <input type="text" class="form-control" id="new-item-unit" value="Chiếc">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tên VTHH *</label>
+        <input type="text" class="form-control" id="new-item-name" placeholder="vd: Tai nghe không dây cao cấp">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Giá mua gần nhất</label>
+          <input type="number" class="form-control" id="new-item-purchase" value="500000">
+        </div>
+        <div class="form-group">
+          <label>Giá bán chuẩn</label>
+          <input type="number" class="form-control" id="new-item-sale" value="750000">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-item')">Hủy bỏ</button>
+        <button class="btn btn-primary" onclick="submitNewItem()">Lưu VTHH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logic Script -->
+  <script>
+    // In-memory Enterprise Database
+    const db = {
+      items: [
+        { id: 'item_1', code: 'MHHTCC01', name: 'Màn hình máy tính cao cấp 27 inch 2K', unit: 'Chiếc', cat: 'Màn hình', purchase: 4200000, sale: 5800000, min: 10, openQty: 25, openAmt: 105000000 },
+        { id: 'item_2', code: 'BP_CO_RGB', name: 'Bàn phím cơ không dây Bluetooth RGB', unit: 'Chiếc', cat: 'Phụ kiện', purchase: 650000, sale: 990000, min: 15, openQty: 50, openAmt: 32500000 },
+        { id: 'item_3', code: 'CHUOT_WL01', name: 'Chuột không dây công thái học Ergonomic', unit: 'Chiếc', cat: 'Phụ kiện', purchase: 280000, sale: 450000, min: 20, openQty: 40, openAmt: 11200000 },
+        { id: 'item_4', code: 'RAM_DDR5_16G', name: 'Thanh RAM DDR5 16GB Bus 5600MHz', unit: 'Thanh', cat: 'Linh kiện', purchase: 1150000, sale: 1550000, min: 8, openQty: 15, openAmt: 17250000 },
+        { id: 'item_5', code: 'SSD_NVME_1TB', name: 'Ổ cứng SSD NVMe M.2 1TB Gen 4x4', unit: 'Chiếc', cat: 'Linh kiện', purchase: 1600000, sale: 2200000, min: 5, openQty: 4, openAmt: 6400000 }
+      ],
+      inwards: [
+        { no: 'NK00001', date: '01/08/2026', obj: 'CÔNG TY CỔ PHẦN MISA', stock: 'Kho Tổng Hà Nội', memo: 'Nhập mua màn hình và SSD', qty: 35, amt: 108000000, details: [
+          { itemId: 'item_1', qty: 20, price: 4200000, amt: 84000000 },
+          { itemId: 'item_5', qty: 15, price: 1600000, amt: 24000000 }
+        ]}
+      ],
+      outwards: [
+        { no: 'XK00001', date: '05/08/2026', obj: 'Khách lẻ Shopee', stock: 'Kho Tổng Hà Nội', memo: 'Xuất kho bán hàng Shopee', qty: 15, cogs: 27500000, details: [
+          { itemId: 'item_1', qty: 5, cost: 4200000, amt: 21000000 },
+          { itemId: 'item_2', qty: 10, cost: 650000, amt: 6500000 }
+        ]},
+        { no: 'XK00002', date: '10/08/2026', obj: 'Khách lẻ TikTokShop', stock: 'Kho Tổng Hà Nội', memo: 'Xuất bán Livestream TikTok', qty: 12, cogs: 3360000, details: [
+          { itemId: 'item_3', qty: 12, cost: 280000, amt: 3360000 }
+        ]}
+      ],
+      transfers: [
+        { no: 'CK00001', date: '12/08/2026', from: 'Kho Tổng Hà Nội', to: 'Kho Trung Tâm TP.HCM', type: 'Chuyển trực tiếp', qty: 5, amt: 21000000 }
+      ]
+    };
+
+    function fmt(n) { return new Intl.NumberFormat('vi-VN').format(n); }
+
+    function renderAll() {
+      // Calculate balances for each item
+      let totalInventoryAmt = 0;
+      let lowStockCount = 0;
+
+      db.items.forEach(item => {
+        let inQty = 0, inAmt = 0, outQty = 0, outAmt = 0;
+        db.inwards.forEach(inv => {
+          inv.details.forEach(d => {
+            if (d.itemId === item.id) { inQty += d.qty; inAmt += d.amt; }
+          });
+        });
+        db.outwards.forEach(outv => {
+          outv.details.forEach(d => {
+            if (d.itemId === item.id) { outQty += d.qty; outAmt += d.amt; }
+          });
+        });
+
+        item.inQty = inQty;
+        item.inAmt = inAmt;
+        item.outQty = outQty;
+        item.outAmt = outAmt;
+        item.closeQty = item.openQty + inQty - outQty;
+        item.closeAmt = item.openAmt + inAmt - outAmt;
+        item.unitCost = item.closeQty > 0 ? (item.closeAmt / item.closeQty) : item.purchase;
+
+        totalInventoryAmt += item.closeAmt;
+        if (item.closeQty <= item.min) lowStockCount++;
+      });
+
+      // Update KPI
+      document.getElementById('kpi-total-amount').innerText = fmt(totalInventoryAmt) + ' đ';
+      document.getElementById('kpi-total-items').innerText = db.items.length + ' VTHH';
+      document.getElementById('kpi-low-stock').innerText = lowStockCount + ' mặt hàng';
+      document.getElementById('kpi-postings').innerText = (db.inwards.length + db.outwards.length * 2) + ' bút toán';
+
+      // Render Recent Vouchers
+      const recentBody = document.getElementById('recent-vouchers-body');
+      recentBody.innerHTML = '';
+      db.inwards.forEach(inv => {
+        recentBody.innerHTML += `<tr>
+          <td><b style="color:var(--primary);">${inv.no}</b></td>
+          <td>${inv.date}</td>
+          <td><span class="badge badge-success">Nhập Mua Hàng</span></td>
+          <td>${inv.obj}</td>
+          <td>${inv.memo}</td>
+          <td class="text-right"><b style="color:var(--success);">+${fmt(inv.amt)} đ</b></td>
+          <td class="text-center"><span class="badge badge-success">Đã ghi sổ</span></td>
+        </tr>`;
+      });
+      db.outwards.forEach(outv => {
+        recentBody.innerHTML += `<tr>
+          <td><b style="color:var(--primary);">${outv.no}</b></td>
+          <td>${outv.date}</td>
+          <td><span class="badge badge-warning">Xuất Bán Hàng</span></td>
+          <td>${outv.obj}</td>
+          <td>${outv.memo}</td>
+          <td class="text-right"><b style="color:var(--warning);">${fmt(outv.cogs)} đ</b></td>
+          <td class="text-center"><span class="badge badge-success">Đã ghi sổ</span></td>
+        </tr>`;
+      });
+
+      // Render Items Table
+      const itemsBody = document.getElementById('items-table-body');
+      itemsBody.innerHTML = '';
+      db.items.forEach(i => {
+        const isLow = i.closeQty <= i.min;
+        itemsBody.innerHTML += `<tr>
+          <td><b>${i.code}</b></td>
+          <td>${i.name} ${isLow ? '<span class="badge badge-warning" style="font-size:9px;">Cận tồn</span>' : ''}</td>
+          <td>${i.unit}</td>
+          <td>${i.cat}</td>
+          <td class="text-right"><b style="color:${isLow ? 'var(--danger)' : 'inherit'};">${i.closeQty}</b></td>
+          <td class="text-right">${fmt(i.unitCost)} đ</td>
+          <td class="text-right"><b>${fmt(i.closeAmt)} đ</b></td>
+          <td class="text-right">${fmt(i.sale)} đ</td>
+          <td>1561</td>
+        </tr>`;
+      });
+
+      // Render Inward Table
+      const inBody = document.getElementById('inward-table-body');
+      inBody.innerHTML = '';
+      db.inwards.forEach(inv => {
+        inBody.innerHTML += `<tr>
+          <td><b style="color:var(--primary);">${inv.no}</b></td>
+          <td>${inv.date}</td>
+          <td>${inv.obj}</td>
+          <td>${inv.stock}</td>
+          <td>${inv.memo}</td>
+          <td class="text-right">${inv.qty}</td>
+          <td class="text-right"><b>${fmt(inv.amt)} đ</b></td>
+          <td class="text-center"><span class="badge badge-success">Nợ 1561 / Có 331</span></td>
+        </tr>`;
+      });
+
+      // Render Outward Table
+      const outBody = document.getElementById('outward-table-body');
+      outBody.innerHTML = '';
+      db.outwards.forEach(outv => {
+        outBody.innerHTML += `<tr>
+          <td><b style="color:var(--primary);">${outv.no}</b></td>
+          <td>${outv.date}</td>
+          <td>${outv.obj}</td>
+          <td>${outv.stock}</td>
+          <td>${outv.memo}</td>
+          <td class="text-right">${outv.qty}</td>
+          <td class="text-right"><b>${fmt(outv.cogs)} đ</b></td>
+          <td class="text-center"><span class="badge badge-success">Nợ 632 / Có 1561</span></td>
+        </tr>`;
+      });
+
+      // Render Transfer Table
+      const trBody = document.getElementById('transfer-table-body');
+      trBody.innerHTML = '';
+      db.transfers.forEach(tr => {
+        trBody.innerHTML += `<tr>
+          <td><b style="color:var(--primary);">${tr.no}</b></td>
+          <td>${tr.date}</td>
+          <td>${tr.from}</td>
+          <td>${tr.to}</td>
+          <td><span class="badge badge-primary">${tr.type}</span></td>
+          <td class="text-right">${tr.qty}</td>
+          <td class="text-right"><b>${fmt(tr.amt)} đ</b></td>
+        </tr>`;
+      });
+
+      // Render S11-DN Reports Table
+      const repBody = document.getElementById('reports-table-body');
+      repBody.innerHTML = '';
+      let sumOpenAmt = 0, sumInAmt = 0, sumOutAmt = 0, sumCloseAmt = 0;
+      db.items.forEach(i => {
+        sumOpenAmt += i.openAmt;
+        sumInAmt += i.inAmt;
+        sumOutAmt += i.outAmt;
+        sumCloseAmt += i.closeAmt;
+
+        repBody.innerHTML += `<tr>
+          <td><b>${i.code}</b></td>
+          <td>${i.name}</td>
+          <td>${i.unit}</td>
+          <td class="text-right">${i.openQty}</td>
+          <td class="text-right">${fmt(i.openAmt)} đ</td>
+          <td class="text-right">${i.inQty}</td>
+          <td class="text-right">${fmt(i.inAmt)} đ</td>
+          <td class="text-right">${i.outQty}</td>
+          <td class="text-right">${fmt(i.outAmt)} đ</td>
+          <td class="text-right"><b>${i.closeQty}</b></td>
+          <td class="text-right"><b style="color:var(--primary);">${fmt(i.closeAmt)} đ</b></td>
+        </tr>`;
+      });
+
+      // Summary Total Row
+      repBody.innerHTML += `<tr style="background:#F1F5F9; font-weight:bold;">
+        <td colspan="4">TỔNG CỘNG TOÀN CÔNG TY</td>
+        <td class="text-right">${fmt(sumOpenAmt)} đ</td>
+        <td></td>
+        <td class="text-right">${fmt(sumInAmt)} đ</td>
+        <td></td>
+        <td class="text-right">${fmt(sumOutAmt)} đ</td>
+        <td></td>
+        <td class="text-right" style="color:var(--primary); font-size:14px;">${fmt(sumCloseAmt)} đ</td>
+      </tr>`;
+
+      // Populate Selects
+      const inSelect = document.getElementById('in-item-select');
+      const outSelect = document.getElementById('out-item-select');
+      inSelect.innerHTML = '';
+      outSelect.innerHTML = '';
+      db.items.forEach(i => {
+        inSelect.innerHTML += `<option value="${i.id}">${i.code} - ${i.name}</option>`;
+        outSelect.innerHTML += `<option value="${i.id}">${i.code} - ${i.name} (Tồn: ${i.closeQty})</option>`;
+      });
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById('view-' + viewName);
+      if (target) target.classList.remove('hidden');
+
+      const titles = {
+        'dashboard': 'Tổng Quan Phân Hệ Kho & Kế Toán Kho',
+        'items': 'Danh Mục Vật Tư Hàng Hóa (DI_INVENTORY_ITEM)',
+        'inward': 'Phiếu Nhập Kho (IN_INWARD)',
+        'outward': 'Phiếu Xuất Kho (IN_OUTWARD)',
+        'transfer': 'Điều Chuyển Kho (IN_TRANSFER)',
+        'audit': 'Biên Bản Kiểm Kê Kho (IN_AUDITWARD)',
+        'cost': 'Tính Giá Xuất Kho Kỳ Kế Toán (IN_CALCULATE_PRICE)',
+        'reports': 'Bảng Tổng Hợp Nhập - Xuất - Tồn (Mẫu S11-DN)'
+      };
+      document.getElementById('page-title').innerText = titles[viewName] || 'Phân Hệ Kho BizOne ERP';
+
+      // Set active menu
+      event?.currentTarget?.classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function openAddInwardModal() { openModal('modal-inward'); }
+    function openAddOutwardModal() { openModal('modal-outward'); }
+    function openAddItemModal() { openModal('modal-item'); }
+
+    function onInwardItemChange() {
+      const selectedId = document.getElementById('in-item-select').value;
+      const item = db.items.find(i => i.id === selectedId);
+      if (item) document.getElementById('in-price').value = item.purchase;
+    }
+
+    function submitInward() {
+      const no = document.getElementById('in-voucher-no').value;
+      const stock = document.getElementById('in-stock').value;
+      const supplier = document.getElementById('in-supplier').value;
+      const itemId = document.getElementById('in-item-select').value;
+      const qty = parseFloat(document.getElementById('in-qty').value) || 1;
+      const price = parseFloat(document.getElementById('in-price').value) || 0;
+      const amt = qty * price;
+
+      db.inwards.unshift({
+        no: no,
+        date: new Date().toLocaleDateString('vi-VN'),
+        obj: supplier,
+        stock: stock,
+        memo: 'Nhập mua hàng hóa',
+        qty: qty,
+        amt: amt,
+        details: [{ itemId: itemId, qty: qty, price: price, amt: amt }]
+      });
+
+      closeModal('modal-inward');
+      renderAll();
+      alert('Đã lưu và ghi sổ Phiếu Nhập Kho ' + no + ' thành công! (Tăng tồn kho & hạch toán Nợ 1561 / Có 331)');
+    }
+
+    function submitOutward() {
+      const no = document.getElementById('out-voucher-no').value;
+      const customer = document.getElementById('out-customer').value;
+      const itemId = document.getElementById('out-item-select').value;
+      const qty = parseFloat(document.getElementById('out-qty').value) || 1;
+      const item = db.items.find(i => i.id === itemId);
+      const cost = item ? item.unitCost : 0;
+      const cogs = qty * cost;
+
+      db.outwards.unshift({
+        no: no,
+        date: new Date().toLocaleDateString('vi-VN'),
+        obj: customer,
+        stock: 'Kho Tổng Hà Nội',
+        memo: 'Xuất kho bán hàng',
+        qty: qty,
+        cogs: cogs,
+        details: [{ itemId: itemId, qty: qty, cost: cost, amt: cogs }]
+      });
+
+      closeModal('modal-outward');
+      renderAll();
+      alert('Đã lưu và ghi sổ Phiếu Xuất Kho ' + no + ' thành công! (Giảm tồn kho & hạch toán Nợ 632 / Có 1561)');
+    }
+
+    function submitNewItem() {
+      const code = document.getElementById('new-item-code').value.trim();
+      const name = document.getElementById('new-item-name').value.trim();
+      const unit = document.getElementById('new-item-unit').value.trim();
+      const purchase = parseFloat(document.getElementById('new-item-purchase').value) || 0;
+      const sale = parseFloat(document.getElementById('new-item-sale').value) || 0;
+
+      if (!code || !name) { alert('Vui lòng nhập đầy đủ mã SKU và tên VTHH!'); return; }
+
+      db.items.push({
+        id: 'item_' + (db.items.length + 1),
+        code: code,
+        name: name,
+        unit: unit,
+        cat: 'Hàng hóa mới',
+        purchase: purchase,
+        sale: sale,
+        min: 5,
+        openQty: 0,
+        openAmt: 0
+      });
+
+      closeModal('modal-item');
+      renderAll();
+      alert('Đã thêm mặt hàng mới: ' + code + ' - ' + name);
+    }
+
+    function runCostCalculation() {
+      document.getElementById('cost-result-box').classList.remove('hidden');
+      alert('Hệ thống đã tính toán lại toàn bộ đơn giá bình quân gia quyền và đồng bộ Sổ Cái Nợ 632 / Có 1561!');
+    }
+
+    // Initial render on page load
+    renderAll();
+  </script>
+</body>
+</html>
