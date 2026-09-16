@@ -1,4 +1,4 @@
-name: Build BizOne ERP (Windows .exe & Android .apk)
+name: Build BizOne ERP (Windows .exe, Android .apk & macOS .app)
 
 on:
   push:
@@ -86,3 +86,40 @@ jobs:
         with:
           name: BizOne_FAD_Windows_x64.zip
           path: BizOne_FAD_Windows_x64.zip
+
+  # 3. Biên dịch ứng dụng macOS (.app / .zip)
+  build-macos:
+    name: Build macOS Desktop (.app)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Enable macOS Desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Scaffold macOS Runner
+        run: flutter create --platforms=macos --org=com.bizone.fad .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS App (.app)
+        run: flutter build macos --release
+
+      - name: Package macOS Release as Zip
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/bizone_fad.app BizOne_FAD_macOS.zip
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BizOne_FAD_macOS.zip
+          path: BizOne_FAD_macOS.zip
