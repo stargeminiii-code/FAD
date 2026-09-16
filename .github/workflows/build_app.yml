@@ -33,7 +33,7 @@ jobs:
           cache: true
 
       - name: Scaffold Android Runner
-        run: flutter create --platforms=android --org=com.bizone.fad .
+        run: flutter create --project-name=bizone_fad --platforms=android --org=com.bizone.fad .
 
       - name: Install dependencies
         run: flutter pub get
@@ -69,7 +69,7 @@ jobs:
         run: flutter config --enable-windows-desktop
 
       - name: Scaffold Windows Runner
-        run: flutter create --platforms=windows --org=com.bizone.fad .
+        run: flutter create --project-name=bizone_fad --platforms=windows --org=com.bizone.fad .
 
       - name: Install dependencies
         run: flutter pub get
@@ -106,7 +106,7 @@ jobs:
         run: flutter config --enable-macos-desktop
 
       - name: Scaffold macOS Runner
-        run: flutter create --platforms=macos --org=com.bizone.fad .
+        run: flutter create --project-name=bizone_fad --platforms=macos --org=com.bizone.fad .
 
       - name: Install dependencies
         run: flutter pub get
