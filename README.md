@@ -1,6 +1,6 @@
-# BizOne ERP - Phân Hệ Tài Chính Kế Toán (FAD) & Quản Lý Kho Chuẩn MISA
+# BizOne ERP - Phân Hệ Tài Chính Kế Toán (FAD) & Quản Lý Kho Chuẩn
 
-Dự án phần mềm **BizOne ERP - FAD (Financial & Accounting Department)** được thiết kế và xây dựng theo chuẩn mực kiến trúc của **MISA SME / MISA AMIS**, tuân thủ Chế độ Kế toán Doanh nghiệp Việt Nam (**Thông tư 200/2014/TT-BTC** và **Thông tư 133/2016/TT-BTC**).
+Dự án phần mềm **BizOne ERP - FAD (Financial & Accounting Department)** được thiết kế và xây dựng theo chuẩn mực kiến trúc của Phần mềm kế toán, tuân thủ Chế độ Kế toán Doanh nghiệp Việt Nam (**Thông tư 200/2014/TT-BTC** và **Thông tư 133/2016/TT-BTC**).
 
 Hệ thống được phát triển bằng công nghệ **Flutter (Dart Framework)** hỗ trợ xuất đồng thời ra:
 - **File `.exe` cho máy tính PC (Windows)**: Giao diện bảng biểu kế toán (DataGrid), hỗ trợ phím tắt nghiệp vụ (F2, F3, F8, F9), in ấn biểu mẫu A4/A5/phiếu nhiệt.
